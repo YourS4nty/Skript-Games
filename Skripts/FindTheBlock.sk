@@ -1,0 +1,126 @@
+command /FindTheBlock:
+	trigger:
+	#Define the 24 Coordinates/Locations
+	#player 1 places
+		set {_loc1} to location(46, 63, -355)
+		set {_loc2} to location(44, 63, -355)
+		set {_loc3} to location(42, 63, -355)
+		set {_loc4} to location(40, 63, -355)
+		set {_loc5} to location(46, 63, -353)
+		set {_loc6} to location(44, 63, -353)
+		set {_loc7} to location(42, 63, -353)
+		set {_loc8} to location(40, 63, -353)
+		set {_loc9} to location(46, 63, -351)
+		set {_loc10} to location(44, 63, -351)
+		set {_loc11} to location(42, 63, -351)
+		set {_loc12} to location(40, 63, -351)
+		
+		#player 2 places
+		set {_loc13} to location(40, 63, -342)
+		set {_loc14} to location(42, 63, -342)
+		set {_loc15} to location(44, 63, -342)
+		set {_loc16} to location(46, 63, -342)
+		set {_loc17} to location(40, 63, -344)
+		set {_loc18} to location(42, 63, -344)
+		set {_loc19} to location(44, 63, -344)
+		set {_loc20} to location(46, 63, -344)
+		set {_loc21} to location(40, 63, -346)
+		set {_loc22} to location(42, 63, -346)
+		set {_loc23} to location(44, 63, -346)
+		set {_loc24} to location(46, 63, -346)
+		
+		#player 1/2 objectives
+		set {_loc25} to location(43, 65, -350)
+		set {_loc26} to location(43, 65, -347)
+		
+		#List of blocks
+		set {_bloques::*} to white_concrete and cobbled_deepslate and magma_block and cherry_planks and granite and packed_ice and nether_wart_block and light_gray_stained_glass and amethyst_block and blue_wool and cobblestone and dirt and pink_stained_glass and polished_deepslate and oak_planks and red_wool and stone and grass_block and orange_terracotta and black_stained_glass and prismarine and honey_block and warped_wart_block and soul_sand and calcite and dark_prismarine and bamboo_block and smooth_basalt and glowstone and moss_block and cracked_stone_bricks and sea_lantern and scaffolding and red_sand and cyan_terracotta and purpur_block and end_stone and shroomlight and mud_bricks and mangrove_planks and terracotta and snow_block and chiseled_quartz_block and green_concrete and light_blue_wool and yellow_stained_glass and polished_granite and stripped_spruce_log and oxidized_copper and tuff and oak_slab and stone_slab and brick_slab and quartz_slab and warped_slab and blackstone_slab and nether_brick_slab and copper_block and raw_gold_block and sand and sandstone and red_sandstone and andesite and diorite and basalt and deepslate_bricks and red_nether_bricks and mycelium and podzol
+		
+		# Randomly select 12 blocks from the list
+		set {_bloque1} to random element out of {_bloques::*}
+		remove {_bloque1} from {_bloques::*}
+		set {_bloque2} to random element out of {_bloques::*}
+		remove {_bloque2} from {_bloques::*}
+		set {_bloque3} to random element out of {_bloques::*}
+		remove {_bloque3} from {_bloques::*}
+		set {_bloque4} to random element out of {_bloques::*}
+		remove {_bloque4} from {_bloques::*}
+		set {_bloque5} to random element out of {_bloques::*}
+		remove {_bloque5} from {_bloques::*}
+		set {_bloque6} to random element out of {_bloques::*}
+		remove {_bloque6} from {_bloques::*}
+		set {_bloque7} to random element out of {_bloques::*}
+		remove {_bloque7} from {_bloques::*}
+		set {_bloque8} to random element out of {_bloques::*}
+		remove {_bloque8} from {_bloques::*}
+		set {_bloque9} to random element out of {_bloques::*}
+		remove {_bloque9} from {_bloques::*}
+		set {_bloque10} to random element out of {_bloques::*}
+		remove {_bloque10} from {_bloques::*}
+		set {_bloque11} to random element out of {_bloques::*}
+		remove {_bloque11} from {_bloques::*}
+		set {_bloque12} to random element out of {_bloques::*}
+		remove {_bloque12} from {_bloques::*}
+		
+		# randdom select the objectives
+		set {_objetivo1} to random element out of {_bloque1} and {_bloque2} and {_bloque3} and {_bloque4} and {_bloque5} and {_bloque6} and {_bloque7} and {_bloque8} and  {_bloque9} and {_bloque10} and {_bloque11} and {_bloque12}
+		set {_objetivo2} to random element out of {_bloque1} and {_bloque2} and {_bloque3} and {_bloque4} and {_bloque5} and {_bloque6} and {_bloque7} and {_bloque8} and  {_bloque9} and {_bloque10} and {_bloque11} and {_bloque12}   
+		
+		# Set the blocks in the locations player 1
+		set block at {_loc1} to {_bloque1}
+		set block at {_loc2} to {_bloque2}
+		set block at {_loc3} to {_bloque3}
+		set block at {_loc4} to {_bloque4}
+		set block at {_loc5} to {_bloque5}
+		set block at {_loc6} to {_bloque6}
+		set block at {_loc7} to {_bloque7}
+		set block at {_loc8} to {_bloque8}
+		set block at {_loc9} to {_bloque9}
+		set block at {_loc10} to {_bloque10}
+		set block at {_loc11} to {_bloque11}
+		set block at {_loc12} to {_bloque12}
+		
+		# Set the blocks in the locations player 2
+		set block at {_loc13} to {_bloque1}
+		set block at {_loc14} to {_bloque2}
+		set block at {_loc15} to {_bloque3}
+		set block at {_loc16} to {_bloque4}
+		set block at {_loc17} to {_bloque5}
+		set block at {_loc18} to {_bloque6}
+		set block at {_loc19} to {_bloque7}
+		set block at {_loc20} to {_bloque8}
+		set block at {_loc21} to {_bloque9}
+		set block at {_loc22} to {_bloque10}
+		set block at {_loc23} to {_bloque11}
+		set block at {_loc24} to {_bloque12}
+		
+		# Set the objectives
+		set block at {_loc25} to {_objetivo1}
+		set block at {_loc26} to {_objetivo2}
+		
+		# Open all the trapdoors
+		execute console command "/setblock 46 64 -346 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 46 64 -355 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 44 64 -355 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 42 64 -355 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 40 64 -355 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 46 64 -353 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 44 64 -353 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 42 64 -353 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 40 64 -353 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 46 64 -351 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 44 64 -351 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 42 64 -351 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 40 64 -351 minecraft:spruce_trapdoor[facing=north,half=bottom,open=true]"
+		execute console command "/setblock 40 64 -342 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 42 64 -342 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 44 64 -342 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 46 64 -342 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 40 64 -344 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 42 64 -344 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 44 64 -344 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 46 64 -344 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 40 64 -346 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 42 64 -346 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 44 64 -346 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
+		execute console command "/setblock 46 64 -346 minecraft:spruce_trapdoor[facing=south,half=bottom,open=true]"
