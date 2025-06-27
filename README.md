@@ -20,6 +20,7 @@ They are fully customizable and perfect for events, creative challenges, or addi
 | 🎲 Game Name          | Description                                     | Status      |
 |----------------------|-------------------------------------------------|-------------|
 | `Guess the Block`    | Players must find a randomly chosen block       | ✅ Finished  |
+| `Disco Ground`      | Just a random ground froglight | ✅ Finished |
 | `Color Shuffle`      | Stand on the correct color before time runs out | 🛠️ Improving |
 | `More Coming Soon`   | New games are in development                    | 🚧 Planned   |
 
