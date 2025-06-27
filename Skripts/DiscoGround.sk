@@ -1,0 +1,58 @@
+command /DiscoGround:
+    trigger:
+        # Define the blocks to be used (froglight)
+        set {_bloques::*} to pearlescent_froglight and verdant_froglight and ochre_froglight
+
+        #Set the locations for the blocks
+        set {_loc1} to location(-5, -23, -349)
+        set {_loc2} to location(-5, -23, -348)
+        set {_loc3} to location(-5, -23, -347)
+        set {_loc4} to location(-5, -23, -346)
+        set {_loc5} to location(-6, -23, -349)
+        set {_loc6} to location(-6, -23, -348)
+        set {_loc7} to location(-6, -23, -347)
+        set {_loc8} to location(-6, -23, -346)
+        set {_loc9} to location(-7, -23, -349)
+        set {_loc10} to location(-7, -23, -348)
+        set {_loc11} to location(-7, -23, -347)
+        set {_loc12} to location(-7, -23, -346)
+        set {_loc13} to location(-8, -23, -349)
+        set {_loc14} to location(-8, -23, -348)
+        set {_loc15} to location(-8, -23, -347)
+        set {_loc16} to location(-8, -23, -346)
+
+        # Randomly select blocks for each location
+        set {_bloque1} to random element out of {_bloques::*}
+        set {_bloque2} to random element out of {_bloques::*}
+        set {_bloque3} to random element out of {_bloques::*}
+        set {_bloque4} to random element out of {_bloques::*}
+        set {_bloque5} to random element out of {_bloques::*}
+        set {_bloque6} to random element out of {_bloques::*}
+        set {_bloque7} to random element out of {_bloques::*}
+        set {_bloque8} to random element out of {_bloques::*}
+        set {_bloque9} to random element out of {_bloques::*}
+        set {_bloque10} to random element out of {_bloques::*}
+        set {_bloque11} to random element out of {_bloques::*}
+        set {_bloque12} to random element out of {_bloques::*}
+        set {_bloque13} to random element out of {_bloques::*}
+        set {_bloque14} to random element out of {_bloques::*}
+        set {_bloque15} to random element out of {_bloques::*}
+        set {_bloque16} to random element out of {_bloques::*}
+
+        # Set the blocks in the specified locations
+        set block at {_loc1} to {_bloque1}
+        set block at {_loc2} to {_bloque2}
+        set block at {_loc3} to {_bloque3}
+        set block at {_loc4} to {_bloque4}
+        set block at {_loc5} to {_bloque5}
+        set block at {_loc6} to {_bloque6}
+        set block at {_loc7} to {_bloque7}
+        set block at {_loc8} to {_bloque8}
+        set block at {_loc9} to {_bloque9}
+        set block at {_loc10} to {_bloque10}
+        set block at {_loc11} to {_bloque11}
+        set block at {_loc12} to {_bloque12}
+        set block at {_loc13} to {_bloque13}
+        set block at {_loc14} to {_bloque14}
+        set block at {_loc15} to {_bloque15}
+        set block at {_loc16} to {_bloque16}
