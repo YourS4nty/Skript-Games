@@ -29,7 +29,7 @@ command /colorfloor_start:
 		# List of valid wool colors to use for the floor
 		set {_colores::*} to red_wool and blue_wool and green_wool and yellow_wool and orange_wool and pink_wool and purple_wool and lime_wool and cyan_wool and white_wool
 		
-		# 📍 Location to teleport eliminated players (change this to your elimination area)
+		# Location to teleport eliminated players (change this to your elimination area)
 		set {_eliminadoLoc} to location(35, 63, -333)
 		
 		# Create the 10x10 floor using random wool blocks
