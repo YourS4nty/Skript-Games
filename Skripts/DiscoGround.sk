@@ -1,7 +1,7 @@
 command /DiscoGround:
 	trigger:
 		# Setting up the blocks to use
-		set {_bloques::*} to pearlescent_froglight, verdant_froglight, ochre_froglight
+		set {_bloques::*} to pearlescent_froglight and verdant_froglight and ochre_froglight
 
 		# Top-left corner coordinates of the grid
 		set {_xStart} to -5
