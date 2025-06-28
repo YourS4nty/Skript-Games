@@ -1,0 +1,90 @@
+command /ColorGameStart:
+	trigger:
+		if {colorGame.running} is true:
+			stop
+		set {colorGame.running} to true
+		broadcast "&a¡El minijuego del suelo de colores ha comenzado!"
+		execute console command "/colorfloor_start"
+		
+command /StopColorGame:
+	trigger:
+		delete {colorGame.running}
+		broadcast "&c¡Se ha detenido el minijuego del suelo de colores!"
+		
+		# Replace the entire game floor with structure_block
+		# ⬇️ Modify these coordinates to match your 10x10 floor top-left corner (start at X = 49, Z = -338)
+		set {_x} to 49
+		loop 10 times:
+			set {_z} to -338
+			loop 10 times:
+				set block at location({_x}, 63, {_z}) to structure_block
+				add 1 to {_z}
+			subtract 1 from {_x}
+			
+command /colorfloor_start:
+	trigger:
+		if {colorGame.running} is not true:
+			stop
+			
+		# List of valid wool colors to use for the floor
+		set {_colores::*} to red_wool and blue_wool and green_wool and yellow_wool and orange_wool and pink_wool and purple_wool and lime_wool and cyan_wool and white_wool
+		
+		# 📍 Location to teleport eliminated players (change this to your elimination area)
+		set {_eliminadoLoc} to location(35, 63, -333)
+		
+		# Create the 10x10 floor using random wool blocks
+		# ⬇️ Change starting X/Z here to match your actual floor coordinates (top-left corner at X = 49, Z = -338)
+		set {_x} to 49
+		loop 10 times:
+			set {_z} to -338
+			loop 10 times:
+				set block at location({_x}, 63, {_z}) to random element out of {_colores::*}
+				add 1 to {_z}
+			subtract 1 from {_x}
+			
+		wait 1 second
+		
+		# Choose a random color and tell players to stand on it
+		set {_colorObjetivo} to random element out of {_colores::*}
+		set {_espera} to random integer between 2 and 5
+		broadcast "&e¡PÁRATE en el color: &b%{_colorObjetivo}%&e! Tienes %{_espera}% segundos..."
+		
+		# Wait based on the random countdown
+		if {_espera} = 2:
+			wait 2 seconds
+		if {_espera} = 3:
+			wait 3 seconds
+		if {_espera} = 4:
+			wait 4 seconds
+		if {_espera} = 5:
+			wait 5 seconds
+			
+		# Replace all incorrect colors with structure_block
+		# ⬇️ Use same floor coordinates as above
+		set {_x} to 49
+		loop 10 times:
+			set {_z} to -338
+			loop 10 times:
+				set {_loc} to location({_x}, 63, {_z})
+				if block at {_loc} is not {_colorObjetivo}:
+					set block at {_loc} to structure_block
+				add 1 to {_z}
+			subtract 1 from {_x}
+			
+		wait 1 tick # Ensure blocks are updated before checking players
+		
+		# Instantly teleport any player standing on a removed (structure_block) tile
+		loop all players:
+			set {_loc} to location of loop-player
+			set {_below} to location(x-coordinate of {_loc}, y-coordinate of {_loc} - 1, z-coordinate of {_loc})
+			if block at {_below} is structure_block:
+				teleport loop-player to {_eliminadoLoc}
+				send "&c¡Has perdido esta ronda!" to loop-player
+				
+		wait 2 seconds
+		
+		# If game is still running, repeat the round
+		if {colorGame.running} is true:
+			execute console command "/colorfloor_start"
+		else:
+			broadcast "&c¡El minijuego del suelo de colores ha sido detenido!"
