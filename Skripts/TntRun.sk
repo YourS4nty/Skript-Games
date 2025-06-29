@@ -1,0 +1,77 @@
+# TNT Run Minigame with Circular Area - Fully Functional for Skript 2.11.2
+
+# Command to start the game
+command /tntrun_start:
+	trigger:
+		if {tntrun.running} is true:
+			send "&c¡TNT Run ya está en marcha!"
+			stop
+		set {tntrun.running} to true
+		broadcast "&a¡TNT Run ha comenzado!"
+		execute console command "/tntrun_resetfloor"
+		
+		# Command to stop the game
+command /tntrun_stop:
+	trigger:
+		delete {tntrun.running}
+		broadcast "&c¡TNT Run ha sido detenido!"
+		
+		# Command to regenerate 3 circular floors
+command /tntrun_resetfloor:
+	trigger:
+	# Customizable coordinates
+		set {_cx} to 45
+		set {_cy} to 90
+		set {_cz} to -334
+		set {_radius} to 10
+		
+		set {_minx} to {_cx} - {_radius}
+		set {_maxx} to {_cx} + {_radius}
+		set {_minz} to {_cz} - {_radius}
+		set {_maxz} to {_cz} + {_radius}
+		
+		# 3 circular floors
+		loop 3 times:
+			set {_y} to {_cy} - ((loop-number - 1) * 5)
+			set {_x} to {_minx}
+			loop {_maxx} - {_minx} + 1 times:
+				set {_z} to {_minz}
+				loop {_maxz} - {_minz} + 1 times:
+					set {_dx} to {_x} - {_cx}
+					set {_dz} to {_z} - {_cz}
+					set {_dist} to sqrt({_dx} * {_dx} + {_dz} * {_dz})
+					if {_dist} <= {_radius}:
+						set block at location({_x}, {_y}, {_z}) to blue_ice
+					add 1 to {_z}
+				add 1 to {_x}
+				
+				# Game logic: remove blocks and eliminate players
+every 1 tick:
+	if {tntrun.running} is true:
+		set {_cx} to 45
+		set {_cy} to 90
+		set {_cz} to -334
+		set {_radius} to 10
+		
+		loop all players:
+			set {_p} to loop-player
+			set {_loc} to location of {_p}
+			set {_x} to floor(x-coordinate of {_loc})
+			set {_y} to floor(y-coordinate of {_loc})
+			set {_z} to floor(z-coordinate of {_loc})
+			
+			set {_dx} to {_x} - {_cx}
+			set {_dz} to {_z} - {_cz}
+			set {_dist} to sqrt({_dx} * {_dx} + {_dz} * {_dz})
+			
+			if {_dist} <= {_radius}:
+				set {_below} to block at location({_x}, {_y} - 1, {_z})
+				if {_below} is blue_ice:
+					wait 2 ticks
+					set block at location({_x}, {_y} - 1, {_z}) to air
+					
+				if {_y} < {_cy} - 10:
+					teleport {_p} to location(35, 80, -333)
+					broadcast "&c%name of {_p}% ha sido eliminado de TNT Run."
+					send "&c¡Has perdido en TNT Run!" to {_p}
+				
