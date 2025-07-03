@@ -1,34 +1,112 @@
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃ ➤ TNT Run Minigame Script                    ┃
+# ┃ ➤ Author: YourS4nty                          ┃
+# ┃ ➤ Minecraft Version: 1.21.6                  ┃
+# ┃ ➤ Skript Version: 2.11.2                     ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+# Command to verify players and start the countdown
+command /verificartntrun:
+	trigger:
+		if {tntrun.running} is set:
+			send "&c✘ &7Ya hay una partida de TNT Run en curso." to player
+			stop
+		if {tntrun.enCurso} is set:
+			send "&e⌛ &7Una partida de TNT Run está por comenzar. Espera un momento..." to player
+			stop
+
+		set {tntrun.enCurso} to true
+		clear {tntrun.players::*}
+		clear {tntrun.todos::*}
+		set {_world} to world "Minigames"
+		set {_center} to location(2229, -27.5, -2313, {_world})
+		set {_radius} to 5
+
+		# Detect players in the waiting zone
+		loop all players:
+			if world of loop-player is {_world}:
+				if distance between location of loop-player and {_center} <= {_radius}:
+					add loop-player to {tntrun.players::*}
+
+		# Require at least 2 players to proceed
+		if size of {tntrun.players::*} < 2:
+			loop {tntrun.players::*}:
+				send "&c✘ &7Se necesitan al menos &c2 jugadores &7para iniciar TNT Run." to loop-value
+			clear {tntrun.players::*}
+			delete {tntrun.enCurso}
+			stop
+
+		# Send player list and countdown
+		set {_list} to ""
+		loop {tntrun.players::*}:
+			add name of loop-value to {_list}
+		loop {tntrun.players::*}:
+			send "&a✔ &7Jugadores detectados: &f%{_list}%" to loop-value
+			send "&e⏳ &7¡La partida comienza en &c10 segundos&7!" to loop-value
+
+		wait 10 seconds
+
+		# Confirm players are still in the area after countdown
+		clear {_confirmed::*}
+		loop {tntrun.players::*}:
+			if loop-value is online:
+				if distance between location of loop-value and {_center} <= {_radius}:
+					add loop-value to {_confirmed::*}
+
+		if size of {_confirmed::*} < 2:
+			loop {_confirmed::*}:
+				send "&c✘ &7TNT Run cancelado: No hay suficientes jugadores tras la espera." to loop-value
+			clear {tntrun.players::*}
+			delete {tntrun.enCurso}
+			stop
+
+		# Teleport and store players
+		clear {tntrun.players::*}
+		clear {tntrun.todos::*}
+		loop {_confirmed::*}:
+			add loop-value to {tntrun.players::*}
+			add loop-value to {tntrun.todos::*}
+			teleport loop-value to location(2229, -18, -2266, {_world})
+
+		wait 2 seconds
+		execute console command "/tntrun_start"
+
+# Command to officially start the TNT Run match
 command /tntrun_start:
 	trigger:
 		if {tntrun.running} is true:
-			send "&c¡TNT Run ya está en marcha!"
+			send "&c✘ &7TNT Run ya está en marcha." to player
 			stop
 		set {tntrun.running} to true
-		broadcast "&a¡TNT Run ha comenzado!"
+		loop {tntrun.players::*}:
+			send "&a✔ &7¡TNT Run ha comenzado! &f¡Buena suerte!" to loop-value
 		execute console command "/tntrun_resetfloor"
-		
-		# Command to stop the game
+
+# Command to forcefully stop the game
 command /tntrun_stop:
 	trigger:
 		delete {tntrun.running}
-		broadcast "&c¡TNT Run ha sido detenido!"
-		
-		# Command to regenerate 3 circular floors
+		delete {tntrun.enCurso}
+		clear {tntrun.players::*}
+		clear {tntrun.todos::*}
+		execute console command "/tntrun_resetfloor"
+
+# Command to regenerate the TNT Run platform
 command /tntrun_resetfloor:
 	trigger:
-	# Customizable coordinates
-		set {_cx} to 66
-		set {_cy} to 65
-		set {_cz} to -305
-		set {_radius} to 10
-		
+		set {_cx} to 2229
+		set {_cy} to -40
+		set {_cz} to -2266
+		set {_radius} to 15
+		set {_world} to world("Minigames")
+
 		set {_minx} to {_cx} - {_radius}
 		set {_maxx} to {_cx} + {_radius}
 		set {_minz} to {_cz} - {_radius}
 		set {_maxz} to {_cz} + {_radius}
-		
-		# 3 circular floors
-		loop 3 times:
+
+		# Build 5 layers of blue ice in a circular area
+		loop 5 times:
 			set {_y} to {_cy} + ((loop-number - 1) * 5)
 			set {_x} to {_minx}
 			loop {_maxx} - {_minx} + 1 times:
@@ -38,36 +116,65 @@ command /tntrun_resetfloor:
 					set {_dz} to {_z} - {_cz}
 					set {_dist} to sqrt({_dx} * {_dx} + {_dz} * {_dz})
 					if {_dist} <= {_radius}:
-						set block at location({_x}, {_y}, {_z}) to blue_ice
+						set block at location({_x}, {_y}, {_z}, {_world}) to blue_ice
 					add 1 to {_z}
 				add 1 to {_x}
-				
-				# Game logic: remove blocks and eliminate players
+
+# Game logic executed every tick while the game is running
 every 1 tick:
 	if {tntrun.running} is true:
-		set {_cx} to 66
-		set {_cy} to 65
-		set {_cz} to -305
-		set {_radius} to 10
-		
-		loop all players:
-			set {_p} to loop-player
-			set {_loc} to location of {_p}
-			set {_x} to floor(x-coordinate of {_loc})
-			set {_y} to floor(y-coordinate of {_loc})
-			set {_z} to floor(z-coordinate of {_loc})
-			
-			set {_dx} to {_x} - {_cx}
-			set {_dz} to {_z} - {_cz}
-			set {_dist} to sqrt({_dx} * {_dx} + {_dz} * {_dz})
-			
-			if {_dist} <= {_radius}:
-				set {_below} to block at location({_x}, {_y} - 1, {_z})
-				if {_below} is blue_ice:
-					wait 2 ticks
-					set block at location({_x}, {_y} - 1, {_z}) to air
-					
-				if {_y} < {_cy}:
-					teleport {_p} to location(44, 69, -305)
-					broadcast "&c%name of {_p}% ha sido eliminado de TNT Run."
-					send "&c¡Has perdido en TNT Run!" to {_p}
+		set {_cx} to 2229
+		set {_cy} to -18
+		set {_cz} to -2266
+		set {_radius} to 15
+		set {_minY} to -41
+		set {_world} to world("Minigames")
+
+		loop {tntrun.players::*}:
+			if loop-value is online:
+				set {_p} to loop-value
+				set {_loc} to location of {_p}
+				set {_x} to floor(x-coordinate of {_loc})
+				set {_y} to floor(y-coordinate of {_loc})
+				set {_z} to floor(z-coordinate of {_loc})
+
+				set {_dx} to {_x} - {_cx}
+				set {_dz} to {_z} - {_cz}
+				set {_dist} to sqrt({_dx} * {_dx} + {_dz} * {_dz})
+
+				# Destroy blocks beneath the player
+				if {_dist} <= {_radius}:
+					set {_belowLoc} to location({_x}, {_y} - 1, {_z}, {_world})
+					set {_below} to block at {_belowLoc}
+					set {_blockKey} to "%{_x}%|%{_y - 1}%|%{_z}%"
+
+					if {_below} is blue_ice:
+						if {tntrun.breaking::%{_blockKey}%} is not set:
+							set {tntrun.breaking::%{_blockKey}%} to true
+							wait 2 ticks
+							set block at {_belowLoc} to air
+							delete {tntrun.breaking::%{_blockKey}%}
+
+				# Eliminate player if they fall below min Y
+				if {_y} < {_minY}:
+					send "&c✘ &7Has sido eliminado de &cTNT Run&7." to {_p}
+					teleport {_p} to location(2229, -28, -2313, {_world})
+					remove {_p} from {tntrun.players::*}
+
+					# Declare winner
+					if size of {tntrun.players::*} = 1:
+						set {_winner} to first element of {tntrun.players::*}
+						loop {tntrun.todos::*}:
+							set {_j} to loop-value-2
+							send "&6&l━━━━━━━━━━━━━━━━━━━━━━" to {_j}
+							send "&e🏆 &a¡%name of {_winner}% ha ganado TNT Run!" to {_j}
+							send "&6&l━━━━━━━━━━━━━━━━━━━━━━" to {_j}
+						teleport {_winner} to location(2229, -28, -2313, {_world})
+						send "&a&l¡Felicidades! Has ganado TNT Run 🎉" to {_winner}
+						execute console command "/tntrun_stop"
+						stop
+
+					# Stop game if all are eliminated
+					if size of {tntrun.players::*} = 0:
+						execute console command "/tntrun_stop"
+						stop
