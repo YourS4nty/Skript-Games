@@ -1,0 +1,218 @@
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃ 🎯 Paintball FFA v1.0 - by YourS4nty  ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+command /paintball_verificar:
+	trigger:
+		if {paintball.running} is set:
+			send "&c&l⛔ ¡Ya hay una partida de Paintball en curso!" to player
+			stop
+
+		clear {paintball.jugadores::*}
+		clear {paintball.activos::*}
+		clear {paintball.nombres::*}
+		clear {paintball.kills::*}
+		clear {paintball.hits::*}
+
+		loop all players:
+			if world of loop-player is "Minigames":
+				set {_loc} to location of loop-player
+				set {_x} to x-coordinate of {_loc}
+				set {_y} to y-coordinate of {_loc}
+				set {_z} to z-coordinate of {_loc}
+				if {_x} >= -791:
+					if {_x} <= -760:
+						if {_y} >= 30:
+							if {_y} <= 34:
+								if {_z} >= -2727:
+									if {_z} <= -2696:
+										add loop-player to {paintball.jugadores::*}
+										add loop-player to {paintball.activos::*}
+										set {paintball.nombres::%loop-player%} to name of loop-player
+										clear inventory of loop-player
+
+		if size of {paintball.jugadores::*} < 2:
+			send "&c&l⚠ ¡Se necesitan al menos 2 jugadores en la zona para jugar Paintball!" to player
+			clear {paintball.jugadores::*}
+			clear {paintball.activos::*}
+			stop
+
+		loop {paintball.jugadores::*}:
+			send "&e&l🎮 ¡Partida detectada! Jugadores: &f%size of {paintball.jugadores::*}%" to loop-value
+			teleport loop-value to location(-774, -15, -2711, world "Minigames")
+
+		send "&a&l✔ ¡Jugadores verificados! Iniciando partida en &f5 segundos&a..." to player
+		set {paintball.ready} to true
+		wait 5 seconds
+		execute console command "/paintball_iniciar"
+
+
+command /paintball_iniciar:
+	trigger:
+		if {paintball.ready} is not set:
+			send "&c&l⚠ Primero verifica los jugadores con /paintball_verificar." to player
+			stop
+		if {paintball.running} is set:
+			send "&c&l⛔ ¡Ya hay una partida en curso!" to player
+			stop
+
+		set {paintball.running} to true
+		delete {paintball.ready}
+
+		loop {paintball.jugadores::*}:
+			set {_jugador} to loop-value
+			give blaze rod named "&cRifle Paintball" to {_jugador}
+			set slot 8 of inventory of {_jugador} to feather named "&bPluma de Salto"
+			set slot 4 of inventory of {_jugador} to diamond boots named "&bBotas Rápidas"
+			set {paintball.hits::%{_jugador}%} to 0
+			set {paintball.kills::%{_jugador}%} to 0
+			send "&f🎯 &7¡Tienes &f16 balas de pintura&7! Recuerda: 2 golpes para eliminar." to {_jugador}
+			set {saltos.restantes::%{_jugador}%} to 3
+			delete {saltos.cooldown::%{_jugador}%}
+			delete {botas.cooldown::%{_jugador}%}
+
+		loop {paintball.jugadores::*}:
+			send "&a&l✔ ¡La partida de Paintball ha comenzado! Buena suerte." to loop-value
+
+command /paintball_detener:
+	trigger:
+		if {paintball.running} is not set:
+			send "&c&l⛔ No hay ninguna partida activa." to player
+			stop
+
+		loop {paintball.jugadores::*}:
+			send "&c&l🛑 ¡La partida ha sido detenida manualmente!" to loop-value
+			teleport loop-value to location(-775, 32, -2712, world "Minigames")
+
+		clear {paintball.jugadores::*}
+		clear {paintball.activos::*}
+		clear {paintball.hits::*}
+		clear {paintball.kills::*}
+		clear {paintball.nombres::*}
+		clear {paintball.disparo::*}
+		clear {paintball.cooldown::*}
+		clear {paintball.procesado::*}
+		delete {paintball.running}
+
+on right click:
+	player is holding blaze rod named "&cRifle Paintball"
+	if {paintball.running} is set:
+		if world of player is "Minigames":
+			if {paintball.cooldown::%player%} is set:
+				send "&c&l⚠ ¡Espera antes de disparar otra vez!" to player
+				cancel event
+				stop
+			cancel event
+			wait 1 tick
+			shoot snowball from player
+			set {paintball.cooldown::%player%} to true
+			wait 2 seconds
+			delete {paintball.cooldown::%player%}
+
+on shoot:
+	shooter is a player
+	projectile is snowball
+	if {paintball.running} is set:
+		if world of shooter is "Minigames":
+			set {paintball.disparo::%projectile%} to shooter
+
+on projectile hit:
+	projectile is snowball
+	if victim is a player:
+		if {paintball.running} is set:
+			if world of victim is "Minigames":
+				if {paintball.disparo::%projectile%} is set:
+					if {paintball.procesado::%projectile%} is set:
+						stop
+					set {paintball.procesado::%projectile%} to true
+
+					set {_shooter} to {paintball.disparo::%projectile%}
+					if victim is {_shooter}:
+						stop
+
+					add 1 to {paintball.hits::%victim%}
+					set {_hits} to {paintball.hits::%victim%}
+
+					set {_vn} to {paintball.nombres::%victim%}
+					set {_sn} to {paintball.nombres::%{_shooter}%}
+					send "&c¡Has sido golpeado por &f%{_sn}%&c!" to victim
+					send "&a✔ ¡Has golpeado a &f%{_vn}%&a!" to {_shooter}
+
+					if {_hits} >= 3:
+						send "&c✘ ¡Has sido eliminado!" to victim
+						send "&a✔ ¡Eliminaste a &f%{_vn}%&a!" to {_shooter}
+						add 1 to {paintball.kills::%{_shooter}%}
+						remove victim from {paintball.activos::*}
+						teleport victim to location(-775, 32, -2712, world "Minigames")
+
+						wait 1 tick
+						if size of {paintball.activos::*} = 1:
+							set {_winner} to first element of {paintball.activos::*}
+							set {_name} to {paintball.nombres::%{_winner}%}
+							set {_kills} to {paintball.kills::%{_winner}%}
+							if {_kills} is not set:
+								set {_kills} to 0
+							loop {paintball.jugadores::*}:
+								send "&8&m----------------------------------------------------" to loop-value
+								send "&a&l🏆 ¡%{_name}% ha ganado la partida de Paintball!" to loop-value
+								send "&7Kills: &f%{_kills}% &8| &7Jugadores iniciales: &f%size of {paintball.jugadores::*}%" to loop-value
+								send "&8&m----------------------------------------------------" to loop-value
+								teleport loop-value to location(-775, 32, -2712, world "Minigames")
+
+							clear {paintball.jugadores::*}
+							clear {paintball.activos::*}
+							clear {paintball.hits::*}
+							clear {paintball.kills::*}
+							clear {paintball.nombres::*}
+							clear {paintball.disparo::*}
+							clear {paintball.cooldown::*}
+							clear {paintball.procesado::*}
+							delete {paintball.running}
+
+# Salto extra con pluma y cooldown 5 segundos, solo si partida activa
+on right click:
+	player is a player
+	if player's tool is feather named "&bPluma de Salto":
+		if {paintball.running} is not set:
+			stop
+		if {saltos.restantes::%player%} is not set:
+			set {saltos.restantes::%player%} to 3
+		if {saltos.cooldown::%player%} is set:
+			send "&c&l⚠ ¡Espera a que el cooldown termine para usar la pluma de salto de nuevo!" to player
+			cancel event
+			stop
+		if {saltos.restantes::%player%} > 0:
+			cancel event
+			set velocity of player to vector(0, 0.6, 0)
+			subtract 1 from {saltos.restantes::%player%}
+			send "&b¡Salto extra! &fTe quedan &b%{saltos.restantes::%player%}% &fsaltos." to player
+			if {saltos.restantes::%player%} = 0:
+				set {saltos.cooldown::%player%} to true
+				send "&eCooldown de 5 segundos iniciado para la pluma de salto." to player
+				wait 5 seconds
+				set {saltos.restantes::%player%} to 3
+				delete {saltos.cooldown::%player%}
+				send "&a¡Tus saltos extra han sido recargados! Vuelve a usar la pluma." to player
+
+# Botas de diamante que dan velocidad 2 por 5 segundos con cooldown 15, solo en partida activa
+on right click:
+	player is a player
+	if player's tool is diamond boots named "&bBotas Rápidas":
+		if {paintball.running} is not set:
+			stop
+		if {botas.cooldown::%player%} is set:
+			send "&c&l⚠ ¡Espera a que el cooldown de las botas termine!" to player
+			cancel event
+			stop
+		cancel event
+		apply speed 2 to player for 5 seconds
+		send "&a¡Velocidad 2 activada por 5 segundos!" to player
+		set {botas.cooldown::%player%} to true
+		wait 15 seconds
+		delete {botas.cooldown::%player%}
+		send "&a¡Ya puedes usar las botas rápidas de nuevo!" to player
+
+on rightclick:
+	if event-block is warped button:
+		if world of player is "Minigames":
+			execute player command "/paintball_verificar"
