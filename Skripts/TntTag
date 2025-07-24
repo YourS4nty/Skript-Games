@@ -1,0 +1,138 @@
+command /bombtag_start:
+	trigger:
+		if {bombtag.running} is true:
+			send "&c&l⛔ ¡Bomb Tag ya está en marcha!" to player
+			stop
+
+		clear {bombtag.players::*}
+		clear {bombtag.oldplayers::*}
+		set {bombtag.running} to true
+		set {bombtag.firstRound} to true
+
+		loop all players:
+			if world of loop-player is world("Minigames"):
+				set {_loc} to location of loop-player
+				set {_x} to x-coordinate of {_loc}
+				set {_y} to y-coordinate of {_loc}
+				set {_z} to z-coordinate of {_loc}
+				if {_x} >= -102:
+					if {_x} <= -48:
+						if {_y} >= 35:
+							if {_y} <= 61:
+								if {_z} >= -343:
+									if {_z} <= -283:
+										add loop-player to {bombtag.players::*}
+										add loop-player to {bombtag.oldplayers::*}
+
+		if size of {bombtag.players::*} < 2:
+			send "&c&l⚠ ¡Se necesitan al menos 2 jugadores en la zona para jugar Bomb Tag!" to player
+			delete {bombtag.running}
+			stop
+
+		loop {bombtag.players::*}:
+			teleport loop-value to location(-75, 46, -313, world("Minigames"))
+			send "&e&l🎮 ¡Bomb Tag ha comenzado!" to loop-value
+
+		execute console command "/bombtag_next"
+
+command /bombtag_stop:
+	trigger:
+		if {bombtag.running} is not set:
+			send "&c&l⛔ No hay ninguna partida en curso." to player
+			stop
+
+		loop {bombtag.players::*}:
+			teleport loop-value to location(-75, 46, -313, world("Minigames"))
+			send "&c&l🛑 ¡El juego ha sido detenido manualmente!" to loop-value
+
+		delete {bombtag.running}
+		delete {bombtag.players::*}
+		delete {bombtag.bombHolder}
+		delete {bombtag.oldplayers::*}
+		delete {bombtag.firstRound}
+
+command /bombtag_next:
+	trigger:
+		if {bombtag.running} is not true:
+			stop
+
+		if size of {bombtag.players::*} <= 1:
+			if size of {bombtag.players::*} = 1:
+				set {_winner} to first element of {bombtag.players::*}
+				loop {bombtag.oldplayers::*}:
+					send "&a&l🏆 ¡%name of {_winner}% ha ganado la ronda de Bomb Tag!" to loop-value
+					teleport loop-value to location(-75, 46, -313, world("Minigames"))
+			else:
+				loop {bombtag.oldplayers::*}:
+					send "&a&l✔ ¡El juego ha terminado!" to loop-value
+					teleport loop-value to location(-75, 46, -313, world("Minigames"))
+
+			delete {bombtag.running}
+			delete {bombtag.players::*}
+			delete {bombtag.bombHolder}
+			delete {bombtag.oldplayers::*}
+			delete {bombtag.firstRound}
+			stop
+
+		# 🎯 Select bomb holder
+		if {bombtag.bombHolder} is not set:
+			set {_random} to random element out of {bombtag.players::*}
+			set {bombtag.bombHolder} to {_random}
+			loop {bombtag.players::*}:
+				send "&e&l💣 %name of {_random}% &ctiene la bomba. ¡Pásala antes de explotar!" to loop-value
+
+		set {_holder} to {bombtag.bombHolder}
+
+		# ⏱ Tiempo dinámico
+		if {bombtag.firstRound} is true:
+			set {bombtag.delay} to 10
+			delete {bombtag.firstRound}
+		else:
+			set {bombtag.delay} to random integer between 5 and 10
+
+		loop {bombtag.players::*}:
+			send "&f⏳ Tienes &c%{bombtag.delay}% segundos antes de explotar..." to loop-value
+
+		set {_ticks} to {bombtag.delay} * 20
+		set {_counter} to 0
+		loop {_ticks} times:
+			wait 1 tick
+			add 1 to {_counter}
+			if {bombtag.bombHolder} is not {_holder}:
+				stop loop
+
+		if {bombtag.bombHolder} is {_holder}:
+			set {_loser} to {_holder}
+			loop {bombtag.players::*}:
+				send "&c&l💥 ¡%name of {_loser}% no pasó la bomba a tiempo y fue eliminado!" to loop-value
+
+			execute console command "execute at %name of {_loser}% run playsound minecraft:entity.generic.explode master @a ~ ~ ~ 1 1 1"
+			execute console command "execute at %name of {_loser}% run particle explosion ~ ~ ~ 0 0 0 0 3 force"
+
+			teleport {_loser} to location(-75, 55, -313, world("Minigames"))
+			remove {_loser} from {bombtag.players::*}
+			delete {bombtag.bombHolder}
+			execute console command "/bombtag_next"
+
+on damage of player:
+	attacker is a player
+	victim is a player
+	if {bombtag.running} is true:
+		if attacker is {bombtag.bombHolder}:
+			set {bombtag.bombHolder} to victim
+			send "&e&l✅ Le pasaste la bomba a &c%name of victim%!" to attacker
+			send "&c&l⚠ ¡%name of attacker% te pasó la bomba!" to victim
+			loop {bombtag.players::*}:
+				send "&e&l💣 %name of victim% &ctiene la bomba ahora." to loop-value
+			cancel event
+			wait 1 tick
+			execute console command "/bombtag_next"
+
+on rightclick:
+	if event-block is oak button:
+		if world of player is world("Minigames"):
+			if {bombtag.running} is not set:
+				send "&a&l🎮 ¡Minijuego iniciado desde el botón!" to player
+				make player execute command "/bombtag_start"
+			else:
+				send "&c&l⛔ ¡Ya hay una partida en curso!" to player
